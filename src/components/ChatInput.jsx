@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react'
 
-export default function ChatInput({ onSend, onStop, isLoading }) {
+export default function ChatInput({ onSend, onStop, isLoading, webSearchOn, onToggleSearch, isSearching }) {
   const [input, setInput] = useState('')
   const textareaRef = useRef(null)
 
@@ -15,7 +15,7 @@ export default function ChatInput({ onSend, onStop, isLoading }) {
   // 发送消息
   const handleSubmit = () => {
     if (!input.trim() || isLoading) return
-    onSend(input.trim())
+    onSend(input.trim(), { webSearch: webSearchOn })
     setInput('')
     // 重置文本框高度
     if (textareaRef.current) {
@@ -34,13 +34,29 @@ export default function ChatInput({ onSend, onStop, isLoading }) {
   return (
     <div className="chat-input-container">
       <div className="chat-input-wrapper">
+        {/* 联网搜索开关 */}
+        <button
+          className={`search-toggle ${webSearchOn ? 'search-toggle-on' : ''} ${isSearching ? 'search-toggle-searching' : ''}`}
+          onClick={onToggleSearch}
+          disabled={isLoading}
+          title={webSearchOn ? '已开启联网搜索' : '点击开启联网搜索'}
+        >
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <circle cx="11" cy="11" r="8"></circle>
+            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+            <line x1="11" y1="8" x2="11" y2="14" className="search-plus-v"></line>
+            <line x1="8" y1="11" x2="14" y2="11" className="search-plus-h"></line>
+          </svg>
+          <span className="search-toggle-label">联网</span>
+        </button>
+
         <textarea
           ref={textareaRef}
           className="chat-input"
           value={input}
           onChange={(e) => setInput(e.target.value)}
           onKeyDown={handleKeyDown}
-          placeholder="输入你的问题..."
+          placeholder={isSearching ? '正在搜索网络...' : webSearchOn ? '输入关键词，将联网搜索并检索文献...' : '输入学术关键词，检索相关论文...'}
           rows={1}
           disabled={isLoading}
         />
@@ -62,7 +78,7 @@ export default function ChatInput({ onSend, onStop, isLoading }) {
               className="send-btn" 
               onClick={handleSubmit}
               disabled={!input.trim()}
-              title="发送消息"
+              title={webSearchOn ? '联网搜索并发送' : '发送消息'}
             >
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <line x1="22" y1="2" x2="11" y2="13"></line>
@@ -73,7 +89,7 @@ export default function ChatInput({ onSend, onStop, isLoading }) {
         </div>
       </div>
       <p className="input-disclaimer">
-        内容由 AI 生成，仅供参考
+        内容由 AI 生成，仅供学术参考
       </p>
     </div>
   )
